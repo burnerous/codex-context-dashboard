@@ -1,0 +1,9 @@
+{
+  "name": "用量速览数据",
+  "description": "向 Codex 输入区的用量速览提供本地看板的数字摘要。",
+  "version": 1,
+  "hosts": ["codex"],
+  "enabled": true,
+  "order": 81,
+  "params": {}
+}

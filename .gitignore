@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.codex/
+.env
+.env.*
+.npmrc
+*.log
+*.sqlite
+*.sqlite-*

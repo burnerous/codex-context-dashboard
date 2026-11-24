@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <title>Codex 用量</title>
+    <!-- DASHBOARD_STYLES -->
+  </head>
+  <body>
+    <main id="dashboard" class="dashboard">
+      <div id="demo-controls" class="demo-controls" hidden>
+        <span class="demo-label"><i aria-hidden="true"></i>演示数据</span>
+        <div class="demo-settings">
+          <label>状态
+            <select id="demo-state">
+              <option value="ready">有记录</option>
+              <option value="empty">暂无记录</option>
+              <option value="error">连接失败</option>
+            </select>
+          </label>
+          <label>外观
+            <select id="demo-theme">
+              <option value="system">跟随系统</option>
+              <option value="light">浅色</option>
+              <option value="dark">深色</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <article class="surface" aria-labelledby="dashboard-title">
+        <header class="dashboard-head">
+          <div class="title-group">
+            <span class="mast-icon" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+            <h1 id="dashboard-title">Codex 用量</h1>
+          </div>
+          <div class="header-controls">
+            <div class="clock-label">
+              <span id="updated-at" class="numeric" hidden></span>
+              <span>北京时间</span>
+            </div>
+            <button id="refresh" class="icon-button" type="button" aria-label="刷新用量" title="刷新用量" disabled>
+              <span class="refresh-icon" aria-hidden="true"></span>
+            </button>
+          </div>
+        </header>
+
+        <div id="notice" class="notice" role="status" aria-live="polite">
+          <span class="notice-dot" aria-hidden="true"></span>
+          <span id="notice-text">正在读取用量…</span>
+        </div>
+
+        <div id="snapshot" hidden>
+          <div class="account-grid">
+            <section aria-labelledby="quota-title" class="quota-panel panel">
+              <header class="panel-head">
+                <h2 id="quota-title">账号额度</h2>
+                <span id="quota-state" class="state-label" hidden></span>
+              </header>
+              <div id="quota-rows" class="quota-rows"></div>
+            </section>
+
+            <section aria-labelledby="daily-title" class="daily-panel panel">
+              <header class="panel-head">
+                <h2 id="daily-title">近 7 天用量</h2>
+                <span id="daily-state" class="state-label" hidden></span>
+              </header>
+              <div id="daily-chart"></div>
+              <div id="daily-detail" class="daily-detail" aria-live="polite" hidden></div>
+            </section>
+          </div>
+
+          <section class="session-panel panel" aria-labelledby="session-title">
+            <header class="panel-head">
+              <h2 id="session-title">当前对话</h2>
+              <span id="session-state" class="state-label" hidden></span>
+            </header>
+            <div id="session-figures"></div>
+          </section>
+
+          <div id="activity" class="activity-grid" hidden>
+            <section class="trend-panel panel" aria-labelledby="trend-title">
+              <header class="panel-head">
+                <h2 id="trend-title">请求趋势</h2>
+                <div class="request-range" id="request-range" hidden>
+                  <button type="button" class="step-button" data-action="older" title="前一组请求" aria-label="前一组请求"><i aria-hidden="true"></i></button>
+                  <span id="range-label" class="numeric"></span>
+                  <button type="button" class="step-button step-next" data-action="newer" title="后一组请求" aria-label="后一组请求"><i aria-hidden="true"></i></button>
+                </div>
+              </header>
+              <div class="chart-legend" aria-label="图例">
+                <span><i class="legend-input" aria-hidden="true"></i>输入</span>
+                <span><i class="legend-output" aria-hidden="true"></i>输出</span>
+                <span><i class="legend-compaction" aria-hidden="true"></i>压缩</span>
+                <span id="missing-legend" hidden><i class="legend-missing" aria-hidden="true"></i>缺数据</span>
+              </div>
+              <div id="request-chart"></div>
+              <div id="request-detail" class="request-detail" aria-live="polite" hidden></div>
+            </section>
+
+            <section class="events-panel panel" aria-labelledby="events-title">
+              <header class="panel-head">
+                <h2 id="events-title">事件记录</h2>
+                <div class="event-filter" role="group" aria-label="事件筛选">
+                  <button type="button" data-event-filter="key" aria-pressed="true">关键</button>
+                  <button type="button" data-event-filter="all" aria-pressed="false">全部</button>
+                </div>
+              </header>
+              <div id="events"></div>
+              <button id="more-events" class="text-button" type="button" hidden></button>
+            </section>
+          </div>
+        </div>
+      </article>
+    </main>
+    <!-- DASHBOARD_SCRIPT -->
+  </body>
+</html>

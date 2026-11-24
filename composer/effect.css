@@ -1,0 +1,376 @@
+[data-codex-usage-preview] {
+  --cup-bg: #242e40;
+  --cup-fg: #f1f6ff;
+  --cup-muted: #c3d0e0;
+  --cup-accent: #96e6d8;
+  --cup-border: rgb(193 217 244 / 23%);
+  --cup-control-fg: #ccd7df;
+  --cup-glass-opacity: var(--woodfish-codex-usage-preview-opacity, 80%);
+  --cup-glass-blur: var(--woodfish-codex-usage-preview-blur, 18px);
+  --cup-glass-saturate: var(--woodfish-codex-usage-preview-saturate, 135%);
+  --cup-glass-radius: var(--woodfish-codex-usage-preview-border-radius, 19px);
+  --cup-glass-highlight-strength: var(--woodfish-codex-usage-preview-highlight, 100%);
+  --cup-glass-shadow-strength: var(--woodfish-codex-usage-preview-shadow, 100%);
+  --cup-glass-detail-opacity: calc(70% + var(--cup-glass-opacity) * 0.3);
+  --cup-glass-top: rgb(45 55 77 / var(--cup-glass-opacity));
+  --cup-glass-base: rgb(24 33 50 / var(--cup-glass-opacity));
+  --cup-glass-sheen: rgb(192 218 255 / 18%);
+  --cup-glass-reflection: rgb(148 178 235 / 12%);
+  --cup-glass-rim: rgb(201 220 250 / 29%);
+  --cup-glass-highlight: rgb(231 243 255 / 25%);
+  --cup-glass-inner-rim: rgb(198 219 255 / 10%);
+  --cup-glass-shadow: rgb(5 10 24 / 34%);
+  --cup-glass-control: rgb(228 239 255 / 7%);
+  --cup-glass-control-hover: rgb(228 239 255 / 15%);
+  --cup-glass-header: rgb(42 53 75 / var(--cup-glass-detail-opacity));
+  position: fixed;
+  z-index: 2;
+  display: flex;
+  gap: 6px;
+  font: 500 12px/1.4 system-ui, "Microsoft YaHei", sans-serif;
+  color: var(--cup-fg);
+  pointer-events: none;
+}
+[data-codex-usage-preview][data-theme="light"] {
+  --cup-bg: #edf4fb;
+  --cup-fg: #192a40;
+  --cup-muted: #40536b;
+  --cup-accent: #07675b;
+  --cup-border: rgb(65 99 147 / 24%);
+  --cup-control-fg: #465862;
+  --cup-glass-top: rgb(254 255 255 / var(--cup-glass-opacity));
+  --cup-glass-base: rgb(227 239 252 / var(--cup-glass-opacity));
+  --cup-glass-sheen: rgb(255 255 255 / 40%);
+  --cup-glass-reflection: rgb(155 191 235 / 17%);
+  --cup-glass-rim: rgb(110 143 185 / 35%);
+  --cup-glass-highlight: rgb(255 255 255 / 83%);
+  --cup-glass-inner-rim: rgb(255 255 255 / 46%);
+  --cup-glass-shadow: rgb(31 55 91 / 22%);
+  --cup-glass-control: rgb(59 95 145 / 7%);
+  --cup-glass-control-hover: rgb(59 95 145 / 15%);
+  --cup-glass-header: rgb(237 246 254 / var(--cup-glass-detail-opacity));
+}
+[data-codex-usage-preview][hidden],
+[data-codex-usage-preview] [hidden] { display: none !important; }
+[data-codex-usage-preview] :is(.cup-card, .cup-statistics-dialog, .cup-activity-tooltip) {
+  border: 1px solid var(--cup-glass-rim);
+  border-radius: calc(var(--cup-glass-radius) * var(--cup-glass-radius-scale, 1));
+  background: var(--cup-bg);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--cup-glass-highlight) var(--cup-glass-highlight-strength), transparent),
+    inset 0 0 0 1px color-mix(in srgb, var(--cup-glass-inner-rim) var(--cup-glass-highlight-strength), transparent),
+    0 12px var(--cup-glass-shadow-size, 34px) color-mix(in srgb, var(--cup-glass-shadow) var(--cup-glass-shadow-strength), transparent);
+}
+@supports (backdrop-filter: blur(1px)) {
+  [data-codex-usage-preview] :is(.cup-card, .cup-statistics-dialog) {
+    background:
+      radial-gradient(ellipse at 10% 0%, color-mix(in srgb, var(--cup-glass-sheen) var(--cup-glass-highlight-strength), transparent), transparent 61%),
+      radial-gradient(ellipse at 100% 100%, color-mix(in srgb, var(--cup-glass-reflection) var(--cup-glass-highlight-strength), transparent), transparent 57%),
+      linear-gradient(142deg, var(--cup-glass-top), var(--cup-glass-base) 80%);
+    backdrop-filter: blur(calc(var(--cup-glass-blur) * var(--cup-glass-blur-scale, 1))) saturate(var(--cup-glass-saturate));
+  }
+}
+[data-codex-usage-preview] .cup-trigger,
+[data-codex-usage-preview] .cup-card { pointer-events: auto; box-sizing: border-box; }
+[data-codex-usage-preview] .cup-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 5px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  box-shadow: none;
+  color: var(--cup-control-fg);
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  cursor: pointer;
+}
+[data-codex-usage-preview] .cup-trigger:hover,
+[data-codex-usage-preview] .cup-trigger[aria-expanded="true"] {
+  color: var(--cup-fg);
+}
+[data-codex-usage-preview] .cup-trigger:focus-visible {
+  outline: 1px solid var(--cup-accent);
+  outline-offset: -1px;
+}
+[data-codex-usage-preview] .cup-trigger-icon {
+  display: block;
+  flex: none;
+}
+[data-codex-usage-preview] .cup-speed-icon {
+  width: 16px;
+  height: 13px;
+  background: currentColor;
+  clip-path: polygon(0 45%, 22% 45%, 39% 12%, 62% 70%, 75% 45%, 100% 45%,
+    100% 57%, 80% 57%, 60% 93%, 38% 38%, 29% 57%, 0 57%);
+}
+[data-codex-usage-preview] .cup-usage-icon {
+  position: relative;
+  box-sizing: border-box;
+  width: 12px;
+  height: 13px;
+  border: 1.25px solid currentColor;
+  border-radius: 50% / 24%;
+}
+[data-codex-usage-preview] .cup-usage-icon::before,
+[data-codex-usage-preview] .cup-usage-icon::after {
+  content: "";
+  position: absolute;
+  left: -1px;
+  right: -1px;
+  height: 4px;
+  border-bottom: 1.25px solid currentColor;
+  border-radius: 50%;
+}
+[data-codex-usage-preview] .cup-usage-icon::before { top: -1px; }
+[data-codex-usage-preview] .cup-usage-icon::after { top: 3px; }
+[data-codex-usage-preview] .cup-trigger-value strong { font-weight: 650; }
+[data-codex-usage-preview] .cup-compact .cup-trigger-value,
+[data-codex-usage-preview] .cup-short .cup-usage-unit { display: none; }
+[data-codex-usage-preview] .cup-card {
+  position: absolute;
+  bottom: 38px;
+  padding: 14px 15px 13px;
+  max-height: var(--cup-card-space);
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+[data-codex-usage-preview][data-open-below] .cup-card { top: 38px; bottom: auto; }
+[data-codex-usage-preview] .cup-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 650;
+}
+[data-codex-usage-preview] .cup-card-heading { align-items: center; }
+[data-codex-usage-preview] .cup-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+[data-codex-usage-preview] .cup-refresh {
+  display: grid;
+  width: 25px;
+  height: 25px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--cup-border);
+  border-radius: 8px;
+  background: var(--cup-glass-control);
+  color: var(--cup-muted);
+  cursor: pointer;
+}
+[data-codex-usage-preview] .cup-refresh:hover {
+  background: var(--cup-glass-control-hover);
+  color: var(--cup-fg);
+  border-color: var(--cup-muted);
+}
+[data-codex-usage-preview] .cup-refresh:focus-visible { outline: 1px solid var(--cup-accent); outline-offset: 2px; }
+[data-codex-usage-preview] .cup-refresh[aria-busy="true"] { color: var(--cup-accent); cursor: progress; }
+[data-codex-usage-preview] .cup-refresh-icon {
+  position: relative;
+  box-sizing: border-box;
+  width: 12px;
+  height: 12px;
+  border: 1.5px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  transform: rotate(-30deg);
+}
+[data-codex-usage-preview] .cup-refresh-icon::after {
+  position: absolute;
+  top: -1px;
+  right: -2px;
+  width: 4px;
+  height: 4px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  content: "";
+}
+@media (prefers-reduced-motion: no-preference) {
+  [data-codex-usage-preview] .cup-refresh[aria-busy="true"] .cup-refresh-icon {
+    animation: cup-refresh-spin .8s linear infinite;
+  }
+}
+@keyframes cup-refresh-spin { to { transform: rotate(330deg); } }
+[data-codex-usage-preview] .cup-status,
+[data-codex-usage-preview] dt,
+[data-codex-usage-preview] .cup-current-label,
+[data-codex-usage-preview] .cup-unit,
+[data-codex-usage-preview] .cup-note { color: var(--cup-muted); font-weight: 500; }
+[data-codex-usage-preview] .cup-speed-summary {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  align-items: end;
+  gap: 12px;
+  margin: 13px 0 10px;
+}
+[data-codex-usage-preview] .cup-trend {
+  justify-self: end;
+  width: 100%;
+  max-width: 124px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  color: var(--cup-muted);
+  font-size: 10px;
+}
+[data-codex-usage-preview] .cup-trend canvas { width: 100%; height: 42px; display: block; }
+[data-codex-usage-preview] .cup-current strong {
+  color: var(--cup-accent);
+  font-size: 31px;
+  line-height: 1.16;
+  letter-spacing: -0.045em;
+}
+[data-codex-usage-preview] strong { font-variant-numeric: tabular-nums; }
+[data-codex-usage-preview] .cup-unit { margin-left: 4px; font-size: 10px; white-space: nowrap; }
+[data-codex-usage-preview] .cup-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 12px;
+  border-top: 1px solid var(--cup-border);
+  padding-top: 9px;
+  margin: 0;
+}
+[data-codex-usage-preview] .cup-stats dd { font-size: 17px; margin: 1px 0 0; line-height: 1.2; }
+[data-codex-usage-preview] .cup-note { margin: 12px 0 0; font-size: 10.5px; }
+[data-codex-usage-preview] .cup-usage-totals {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr 0.85fr;
+  gap: 8px;
+  margin: 12px 0 0;
+}
+[data-codex-usage-preview] .cup-usage-totals > div + div {
+  border-left: 1px solid var(--cup-border);
+  padding-left: 9px;
+}
+[data-codex-usage-preview] .cup-usage-totals dt { font-size: 10.5px; }
+[data-codex-usage-preview] .cup-usage-totals dd {
+  margin: 1px 0 0;
+  font-size: 19px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+[data-codex-usage-preview] .cup-usage-totals [data-usage-total] { color: var(--cup-accent); }
+[data-codex-usage-preview] [data-usage-requests][data-pending] {
+  color: var(--cup-muted);
+  font-size: 13px;
+  font-weight: 500;
+}
+[data-codex-usage-preview] .cup-usage-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px 10px;
+  margin-top: 12px;
+}
+[data-codex-usage-preview] .cup-detail-button {
+  min-height: 28px;
+  padding: 3px 9px;
+  border: 1px solid var(--cup-border);
+  border-radius: 8px;
+  background: var(--cup-glass-control);
+  color: var(--cup-accent);
+  font: inherit;
+  cursor: pointer;
+}
+[data-codex-usage-preview] .cup-detail-button:hover {
+  background: var(--cup-glass-control-hover);
+  border-color: var(--cup-accent);
+}
+[data-codex-usage-preview] .cup-detail-button:focus-visible { outline: 1px solid var(--cup-accent); outline-offset: 2px; }
+[data-codex-usage-preview] .cup-detail-button:disabled { color: var(--cup-muted); cursor: default; }
+[data-codex-usage-preview] .cup-usage-detail,
+[data-codex-usage-preview] .cup-quota {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: var(--cup-muted);
+}
+[data-codex-usage-preview] .cup-usage-section {
+  border-top: 1px solid var(--cup-border);
+  margin-top: 10px;
+  padding-top: 8px;
+}
+[data-codex-usage-preview] .cup-quota-row {
+  display: grid;
+  grid-template-columns: 1fr 1.15fr auto;
+  gap: 6px;
+  margin-top: 4px;
+}
+[data-codex-usage-preview] .cup-quota-row strong { color: var(--cup-accent); }
+[data-codex-usage-preview] .cup-days-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+[data-codex-usage-preview] .cup-days {
+  display: flex;
+  align-items: end;
+  justify-content: end;
+  gap: 3px;
+  width: 86px;
+  height: 24px;
+  padding-bottom: 1px;
+  border-bottom: 1px solid var(--cup-border);
+}
+[data-codex-usage-preview] .cup-days span {
+  width: 9px;
+  height: var(--cup-day-height);
+  min-height: 1px;
+  border-radius: 2px 2px 0 0;
+  background: var(--cup-accent);
+}
+@property --cup-composer-luminosity {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0.1;
+}
+
+/* Extend the Woodfish background to conversation forms without a Codex wrapper. */
+@media screen and (forced-colors: none) and (not (prefers-reduced-transparency: reduce)) {
+  html[data-woodfish-codex][data-theme="light"] {
+    --cup-composer-luminosity-rgb: 204 204 204;
+  }
+
+  html[data-woodfish-codex]:has(style#woodfish-codex-background)
+    form[data-thread-find-composer="true"]:not([data-codex-composer-root] *, [data-composer-placement="home"], [data-composer-placement="home"] *)
+    [data-composer-surface-variant]:not([data-composer-surface-variant="inline"], [data-composer-surface-variant="document"], [data-composer-drag-active]) {
+    --composer-layout-surface-fill: color-mix(in oklab, var(--composer-layout-surface-background) 60%, transparent) !important;
+    --composer-layout-surface-backdrop-filter: blur(var(--woodfish-glass-blur, 21px)) saturate(var(--woodfish-background-saturate, 150%)) !important;
+
+    &:where(:root:has(style#woodfish-codex-background-image) *) {
+      --cup-composer-wallpaper-base: var(--woodfish-codex-surface, var(--color-surface));
+      --cup-composer-wallpaper-tint: color-mix(in oklab,
+        var(--color-background-composer-surface, var(--color-surface-elevated-secondary))
+        calc(100% * var(--woodfish-background-mask, 0.35)), transparent);
+      --cup-composer-wallpaper-veil: color-mix(in oklab, var(--cup-composer-wallpaper-base)
+        calc(100% * (1 - var(--woodfish-background-opacity, 0.15))), transparent);
+      --cup-composer-luminosity: var(--woodfish-background-luminosity, 0.1);
+      --cup-composer-wallpaper-light: rgb(var(--cup-composer-luminosity-rgb, 51 51 51) /
+        clamp(0, var(--cup-composer-luminosity), 0.6));
+      --composer-layout-surface-background: transparent !important;
+      --composer-layout-surface-fill: transparent !important;
+      --composer-layout-surface-backdrop-filter: none !important;
+      background-color: var(--cup-composer-wallpaper-base) !important;
+      background-image:
+        linear-gradient(var(--cup-composer-wallpaper-tint), var(--cup-composer-wallpaper-tint)),
+        linear-gradient(var(--cup-composer-wallpaper-light), var(--cup-composer-wallpaper-light)),
+        linear-gradient(var(--cup-composer-wallpaper-veil), var(--cup-composer-wallpaper-veil)),
+        var(--woodfish-background-image-soft, var(--woodfish-background-image, none)) !important;
+      background-size: auto, auto, auto, var(--woodfish-background-size, cover) !important;
+      background-position: center, center, center, var(--woodfish-background-position, center) !important;
+      background-repeat: no-repeat !important;
+      background-attachment: fixed !important;
+      border-radius: var(--composer-surface-border-radius, var(--composer-border-radius, 24px));
+    }
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "name": "用量速览",
+  "description": "在 Codex 输入区查看正文速度趋势和当前聊天的用量摘要。",
+  "version": 23,
+  "hosts": ["codex"],
+  "enabled": true,
+  "order": 80,
+  "params": {
+    "opacity": {
+      "type": "number",
+      "default": 80,
+      "min": 45,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "label": "底色不透明度",
+      "description": "调低后，卡片会透出更多窗口背景"
+    },
+    "blur": {
+      "type": "number",
+      "default": 18,
+      "min": 0,
+      "max": 45,
+      "step": 1,
+      "unit": "px",
+      "label": "背景模糊",
+      "description": "卡片背后内容的模糊强度"
+    },
+    "saturate": {
+      "type": "number",
+      "default": 135,
+      "min": 50,
+      "max": 220,
+      "step": 5,
+      "unit": "%",
+      "label": "背景饱和度",
+      "description": "调节透过玻璃的背景颜色，100% 为原色"
+    },
+    "borderRadius": {
+      "type": "number",
+      "default": 19,
+      "min": 0,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "label": "圆角",
+      "description": "调节卡片边角的弧度"
+    },
+    "highlight": {
+      "type": "number",
+      "default": 100,
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "label": "高光强度",
+      "description": "调节玻璃表面与边缘的高光"
+    },
+    "shadow": {
+      "type": "number",
+      "default": 100,
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "label": "阴影强度",
+      "description": "调节卡片下方的投影"
+    }
+  }
+}
