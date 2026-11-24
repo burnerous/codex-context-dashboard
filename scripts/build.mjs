@@ -63,7 +63,7 @@ await Promise.all([
     interface: { displayName: "Codex 用量看板（本地）" },
     plugins: [{ name, source: "./plugins/" + name }],
   }),
-  ...[".codex-plugin/plugin.json", "skills/open-usage-dashboard/SKILL.md"].map(async (file) => {
+  ...[".codex-plugin/plugin.json", "skills/open-usage-dashboard/SKILL.md", "assets/icon.png"].map(async (file) => {
     await mkdir(dirname(join(plugin, file)), { recursive: true });
     await copyFile(join(root, "plugin", file), join(plugin, file));
   }),

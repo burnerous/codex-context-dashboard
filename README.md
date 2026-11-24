@@ -1,4 +1,5 @@
 <div align="center">
+  <img src="plugin/assets/icon.png" width="96" height="96" alt="Codex 用量看板图标" />
   <h1>Codex 用量看板</h1>
   <p><strong>这条聊天用了多少 Token？在 Codex 里就能看到。</strong></p>
   <p>从整条对话点到单次请求，查输入、输出和缓存，也能顺手看一眼账号额度。</p>

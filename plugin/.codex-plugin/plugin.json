@@ -1,6 +1,6 @@
 {
   "name": "codex-context-dashboard",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "在 Codex 聊天内查看 Token 用量、上下文输入量趋势和账户额度。",
   "author": { "name": "Local" },
   "skills": "./skills",
@@ -13,6 +13,8 @@
     "longDescription": "在所有本地工作区查看已采集的模型请求、Token 统计、上下文压缩和子代理活动，以及 ChatGPT 账户额度与每日用量。",
     "category": "Productivity",
     "capabilities": ["Read"],
+    "logo": "./assets/icon.png",
+    "composerIcon": "./assets/icon.png",
     "defaultPrompt": ["打开用量看板"]
   }
 }
