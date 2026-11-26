@@ -1,5 +1,7 @@
 import { Tiktoken } from "js-tiktoken/lite";
 import ranks from "composer-speed-ranks";
+import { readContextHistory, saveContextHistory } from "./context-history.ts";
+import { bindContextPreview, contextPanelContent, contextTriggerContent } from "./context-panel.ts";
 import { bindUsagePreview, usagePanelContent } from "./dashboard-preview.ts";
 import {
   buttonGap, composerSlot, currentComposer, homeComposerSelector, pendingComposerMarker, visibleComposerElement,
@@ -7,7 +9,7 @@ import {
 import { NativeChatActivity } from "./native-activity.ts";
 import { NativeDashboardReader } from "./native-dashboard.ts";
 import { NativeChatSpeed } from "./native-speed.ts";
-import { nativeChatUsage, type NativeChatUsage } from "./native-usage.ts";
+import { nativeChatContext, nativeChatUsage, type NativeChatContext, type NativeChatUsage } from "./native-usage.ts";
 import { speedHistoryLimit } from "./speed-history.ts";
 import { drawSpeedChart } from "./speed-chart.ts";
 import { bindUsageStatistics, usageStatisticsMarkup } from "./statistics-panel.ts";
@@ -31,7 +33,8 @@ interface EffectContext {
   later(ms: number, callback: () => void): void;
 }
 
-type Panel = "speed" | "usage";
+type Panel = "speed" | "usage" | "context";
+type RefreshablePanel = Exclude<Panel, "context">;
 
 const layoutRefreshMs = 300;
 const openPanelRefreshMs = 100;
@@ -42,12 +45,14 @@ const composerFooterSelector = "[data-composer-footer-responsive], [data-compose
 function mount(ctx: EffectContext) {
   if (ctx.host !== "codex") return;
   const sessions = new Map<string, NativeChatSpeed>();
-  const reportedUsage = new Map<string, NativeChatUsage>();
+  const reported = new Map<string, { usage: NativeChatUsage | null; context: NativeChatContext | null }>();
   const activity = new NativeChatActivity();
   const desktopReader = new NativeDashboardReader((ms, callback) => ctx.later(ms, callback));
   const refreshSequence = { speed: 0, usage: 0 };
   let manualAccount: AccountSnapshot | null = null;
   let displayedId: string | null = null;
+  let contextKey: string | null = null;
+  let savedContext: NativeChatContext | null = null;
   let encoder: Tiktoken | null = null;
   let pinned: Panel | null = null;
   let openSequence = 0;
@@ -57,6 +62,7 @@ function mount(ctx: EffectContext) {
 
   const root = document.createElement("div");
   root.setAttribute("data-codex-usage-preview", "");
+  root.style.columnGap = `${buttonGap}px`;
   root.hidden = true;
   root.innerHTML = `
     <button type="button" class="cup-trigger" data-speed-trigger aria-label="吐字速度" aria-expanded="false" aria-controls="cup-panel">
@@ -92,14 +98,20 @@ function mount(ctx: EffectContext) {
       <span class="cup-trigger-value"><span data-usage-button-total>—</span><span class="cup-usage-unit"> tok</span> / <strong data-usage-button-cache>—</strong></span>
     </button>
     <section class="cup-card" id="cup-usage-panel" aria-label="用量速览" hidden>${usagePanelContent}</section>
+    <button type="button" class="cup-trigger" data-context-trigger aria-label="上下文窗口" aria-expanded="false" aria-controls="cup-context-panel">
+      ${contextTriggerContent}
+    </button>
+    <section class="cup-card cup-context-card" id="cup-context-panel" aria-label="上下文窗口" hidden>${contextPanelContent}</section>
     ${usageStatisticsMarkup}`;
   const buttons = {
     speed: root.querySelector<HTMLButtonElement>("[data-speed-trigger]")!,
     usage: root.querySelector<HTMLButtonElement>("[data-usage-trigger]")!,
+    context: root.querySelector<HTMLButtonElement>("[data-context-trigger]")!,
   };
   const cards = {
     speed: root.querySelector<HTMLElement>("#cup-panel")!,
     usage: root.querySelector<HTMLElement>("#cup-usage-panel")!,
+    context: root.querySelector<HTMLElement>("#cup-context-panel")!,
   };
   const refreshButtons = {
     speed: cards.speed.querySelector<HTMLButtonElement>(".cup-refresh")!,
@@ -109,7 +121,7 @@ function mount(ctx: EffectContext) {
   const statisticsDialog = root.querySelector<HTMLDialogElement>(".cup-statistics-dialog")!;
   const closeStatistics = statisticsDialog.querySelector<HTMLButtonElement>("[data-statistics-close]")!;
   const statistics = bindUsageStatistics(statisticsDialog, desktopReader, ctx);
-  const panels = ["speed", "usage"] as const;
+  const panels = ["speed", "usage", "context"] as const;
   const triggerValue = root.querySelector<HTMLElement>("[data-speed-button-value]")!;
   const status = root.querySelector<HTMLElement>("[data-speed-status]")!;
   const currentLabel = root.querySelector<HTMLElement>("[data-speed-current-label]")!;
@@ -120,6 +132,8 @@ function mount(ctx: EffectContext) {
   const canvas = root.querySelector<HTMLCanvasElement>("[data-speed-chart]")!;
   const chartEmpty = root.querySelector<HTMLElement>("[data-speed-chart-empty]")!;
   const renderUsage = bindUsagePreview(cards.usage, root);
+  const usageContext = cards.usage.querySelector<HTMLElement>("[data-usage-context]")!;
+  const renderContext = bindContextPreview(buttons.context, cards.context, usageContext);
   ctx.layer.append(root);
   ctx.style(`${style}\n${statisticsStyle}`);
 
@@ -177,7 +191,7 @@ function mount(ctx: EffectContext) {
     for (const speed of sessions.values()) void speed.ready.then(() => speed.finish());
   }
 
-  function showRefreshStatus(panel: Panel, message: string, temporary = false) {
+  function showRefreshStatus(panel: RefreshablePanel, message: string, temporary = false) {
     const sequence = ++refreshSequence[panel];
     const feedback = cards[panel].querySelector<HTMLElement>("[data-refresh-status]")!;
     const defaultNote = cards[panel].querySelector<HTMLElement>("[data-card-note]");
@@ -249,7 +263,17 @@ function mount(ctx: EffectContext) {
     const session = syncActiveChat(composer);
     const styles = getComputedStyle(root);
     const chatData = styles.getPropertyValue(chatProperty).trim();
-    const native = displayedId ? reportedUsage.get(displayedId) ?? null : null;
+    const native = displayedId ? reported.get(displayedId) : undefined;
+    const key = root.dataset.usageKey ?? null;
+    if (key !== contextKey) {
+      contextKey = key;
+      savedContext = key ? readContextHistory(key) : null;
+    }
+    const context = native?.context ?? savedContext;
+    if (key && context && context !== savedContext) {
+      saveContextHistory(key, context);
+      savedContext = context;
+    }
     const snapshot = session?.read(now);
     const samples = session?.recent() ?? [];
     const liveRate = snapshot?.current ?? 0;
@@ -258,7 +282,8 @@ function mount(ctx: EffectContext) {
     write(triggerValue, buttonRate?.toFixed(1) ?? "—");
     const speedLabel = buttonRate == null ? "吐字速度" : `吐字速度，${liveRate > 0 ? "当前" : "最近"} ${buttonRate.toFixed(1)} Token 每秒`;
     if (buttons.speed.getAttribute("aria-label") !== speedLabel) buttons.speed.setAttribute("aria-label", speedLabel);
-    renderUsage(chatData, styles, native, manualAccount);
+    renderUsage(chatData, styles, native?.usage ?? null, manualAccount);
+    renderContext(context, displayedId !== null);
     if (openPanel !== "speed") return;
     write(currentLabel, !snapshot?.streaming && recent != null ? "最近" : "当前");
     write(current, format(snapshot?.streaming ? snapshot.current : recent));
@@ -303,23 +328,30 @@ function mount(ctx: EffectContext) {
     const above = slot.top - 16;
     const below = window.innerHeight - slot.top - 46;
     const openBelow = above < 320 && below > above;
-    const nextPlacement = [slot.left, slot.top, slot.speedWidth, slot.usageWidth, window.innerWidth, above, below].join(",");
+    const nextPlacement = [slot.left, slot.top, slot.speedWidth, slot.usageWidth, slot.contextWidth, window.innerWidth, above, below].join(",");
     if (nextPlacement !== placement) {
       placement = nextPlacement;
       root.style.left = `${slot.left}px`;
       root.style.top = `${slot.top}px`;
       buttons.speed.style.width = `${slot.speedWidth}px`;
       buttons.usage.style.width = `${slot.usageWidth}px`;
+      buttons.context.style.width = `${slot.contextWidth}px`;
       buttons.speed.classList.toggle("cup-compact", slot.speedWidth < 40);
       buttons.usage.classList.toggle("cup-compact", slot.usageWidth < 40);
       buttons.usage.classList.toggle("cup-short", slot.usageWidth < 134);
       buttons.usage.hidden = slot.usageWidth === 0;
-      if (buttons.usage.hidden && openPanel === "usage") close();
+      buttons.context.classList.toggle("cup-compact", slot.contextWidth < 40);
+      buttons.context.hidden = slot.contextWidth === 0;
+      usageContext.hidden = slot.contextWidth >= 40;
+      if (openPanel && buttons[openPanel].hidden) close();
       root.toggleAttribute("data-open-below", openBelow);
       root.style.setProperty("--cup-card-space", `${Math.max(0, openBelow ? below : above)}px`);
-      const edges = { speed: slot.speedWidth, usage: slot.speedWidth + buttonGap + slot.usageWidth };
+      const speedEdge = slot.speedWidth;
+      const usageEdge = speedEdge + (slot.usageWidth ? buttonGap + slot.usageWidth : 0);
+      const edges = { speed: speedEdge, usage: usageEdge, context: usageEdge + buttonGap + slot.contextWidth };
+      const widths = { speed: 314, usage: 348, context: 302 };
       for (const panel of panels) {
-        const width = Math.min(panel === "speed" ? 314 : 348, window.innerWidth - 16);
+        const width = Math.min(widths[panel], window.innerWidth - 16);
         const left = Math.max(8, Math.min(window.innerWidth - width - 8, slot.left + edges[panel] - width));
         cards[panel].style.left = `${left - slot.left}px`;
         cards[panel].style.width = `${width}px`;
@@ -418,15 +450,24 @@ function mount(ctx: EffectContext) {
     const id = threadId.toLowerCase();
     if (method === "thread/tokenUsage/updated") {
       const usage = nativeChatUsage(message, rawId);
-      if (!usage) return;
+      const context = nativeChatContext(message, rawId);
+      if (!usage && !context) return;
       // A first usage notice can arrive before the new chat's composer is mounted.
-      reportedUsage.delete(id);
-      reportedUsage.set(id, usage);
-      if (reportedUsage.size > 96) {
-        const oldest = reportedUsage.keys().next().value;
-        if (oldest) reportedUsage.delete(oldest);
+      const previous = reported.get(id);
+      reported.delete(id);
+      reported.set(id, {
+        usage: usage ?? previous?.usage ?? null,
+        context: context ?? previous?.context ?? null,
+      });
+      if (reported.size > 96) {
+        const oldest = reported.keys().next().value;
+        if (oldest) reported.delete(oldest);
       }
       if (id === displayedId) render();
+      else if (context) {
+        const key = sessions.get(id)?.key;
+        if (key) saveContextHistory(key, context);
+      }
       return;
     }
     activity.receive(id, method, params);

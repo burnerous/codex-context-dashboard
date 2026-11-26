@@ -1,7 +1,7 @@
 {
   "name": "用量速览",
-  "description": "在 Codex 输入区查看正文速度趋势和当前聊天的用量摘要。",
-  "version": 23,
+  "description": "在 Codex 输入区查看上下文占用、正文速度趋势和聊天用量摘要。",
+  "version": 25,
   "hosts": ["codex"],
   "enabled": true,
   "order": 80,

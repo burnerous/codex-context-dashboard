@@ -12,7 +12,7 @@ import type { DashboardSnapshot } from "./dashboard-types.ts";
 import { dashboardProfile, openUsageStore } from "./settings.ts";
 
 const server = new McpServer(
-  { name: "codex-usage-dashboard", version: "0.1.8" },
+  { name: "codex-usage-dashboard", version: "0.1.9" },
   { instructions: "用户要求打开 Codex 用量看板时，调用 open_usage_dashboard，在聊天内呈现面板。" },
 );
 const uri = "ui://codex-usage-dashboard/dashboard-0.1.1.html";

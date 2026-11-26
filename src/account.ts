@@ -1,4 +1,6 @@
 import { spawn } from "node:child_process";
+import { existsSync } from "node:fs";
+import { isAbsolute } from "node:path";
 import { asRecord, parseAccountSnapshot, QUOTA_METHOD, USAGE_METHOD, type AccountReadMethod } from "./account-data.ts";
 import type { AccountSnapshot } from "./dashboard-types.ts";
 export type { AccountReadMethod } from "./account-data.ts";
@@ -11,7 +13,10 @@ const MAX_OUTPUT_BYTES = 2 * MAX_LINE_BYTES;
 type AccountReader = (method: AccountReadMethod) => Promise<unknown>;
 
 async function withCodexReader<T>(run: (read: AccountReader) => Promise<T>, profile?: string): Promise<T> {
-  const executable = process.platform === "win32" ? "codex.exe" : "codex";
+  const installedCodex = process.env.CODEX_DASHBOARD_CODEX_EXE;
+  const executable = installedCodex && isAbsolute(installedCodex) && existsSync(installedCodex)
+    ? installedCodex
+    : process.platform === "win32" ? "codex.exe" : "codex";
   const child = spawn(executable, ["app-server"], {
     shell: false,
     stdio: ["pipe", "pipe", "ignore"],

@@ -3,11 +3,11 @@
   <h1>Codex 用量看板</h1>
   <p><strong>这条聊天用了多少 Token？在 Codex 里就能看到。</strong></p>
   <p>从整条对话点到单次请求，查输入、输出和缓存，也能顺手看一眼账号额度。</p>
-  <p>Windows 桌面端 · Node.js 24+ · <a href="LICENSE">MIT</a></p>
+  <p>Windows 桌面端 · 支持离线安装 · <a href="LICENSE">MIT</a></p>
   <p><a href="#界面预览">界面预览</a> · <a href="#安装聊天内看板">快速安装</a> · <a href="#可选的输入区用量速览">Woodfish 速览</a></p>
 </div>
 
-> Inspect per-chat token usage, cache hits, request traces, and account limits in Codex for Windows. The optional Woodfish integration adds output speed and usage history to the composer.
+> Inspect per-chat token usage, cache hits, request traces, and account limits in Codex for Windows. The optional Woodfish integration shows context-window usage, output speed, and chat usage in the composer.
 
 ## 界面预览
 
@@ -36,6 +36,14 @@
 
 ## 安装聊天内看板
 
+### Windows x64 离线安装
+
+在 GitHub Releases 下载 `*-windows-x64-offline.zip`，完整解压后双击 `Install.cmd`。电脑需要已安装 Windows 版 Codex 桌面端。包内自带 Node.js 和构建产物，安装插件时无需安装 Node.js、npm 或 Git。
+
+如果电脑已启用 [Woodfish 的 Codex 桌面效果](https://github.com/woodfishhhh/Woodfish-Theme#codex-桌面端)，再双击 `Install-Woodfish.cmd`，即可安装输入区速览。安装完成后可以删除解压目录。更新时解压新版并再次运行相应的安装程序。运行安装程序会启用插件。 [下载离线包](https://github.com/burnerous/codex-context-dashboard/releases/latest)
+
+### 从源码安装
+
 准备 Windows 版 Codex 桌面端、Node.js 24 或更新版本，并确认 PowerShell 能找到 `codex.exe`。
 
 ```powershell
@@ -54,13 +62,14 @@ npm run build
 
 ## 可选的输入区用量速览
 
-聊天内看板可以独立使用。要在输入区底部显示波形和圆柱按钮，先完成上面的插件安装，再启用 Woodfish 的 Codex 桌面效果。回到项目目录运行下面的命令。 [Woodfish 安装说明](https://github.com/woodfishhhh/Woodfish-Theme#codex-桌面端)
+聊天内看板可以独立使用。要在输入区底部显示波形、圆柱和环形按钮，先安装聊天内看板，再启用 Woodfish 的 Codex 桌面效果。离线包用户双击 `Install-Woodfish.cmd`。从源码安装时，在项目目录运行下面的命令。 [Woodfish 安装说明](https://github.com/woodfishhhh/Woodfish-Theme#codex-桌面端)
 
 ```powershell
 .\scripts\install-composer.ps1
 ```
 
 - **波形按钮**显示当前的估算输出速度，回复结束后留住最近一次采样。测速卡还会显示本轮状态和最近 24 个采样的折线。
+- **环形按钮**显示当前聊天的上下文窗口占用。悬停可以查看已用、剩余和窗口上限。数据随 Codex 的上下文用量上报更新，并按会话保留最近一次读数。
 - **圆柱按钮**显示当前聊天的累计 Token 和缓存命中率。悬浮还能看到已记录的模型调用次数、账号额度和近 7 天用量。在小卡里点「查看用量统计」，可在本机全部和当前会话之间切换，按天、周或月查看 Token 的新增与缓存读取。冰山图上下共用一个刻度，点柱子可以筛选下方的模型表格。活动热力图也在同一窗口。
 
 悬停打开小卡，点一次固定，再点一次或按 Esc 关闭。小卡右上角的刷新按钮会重读测速样本，或更新本地用量和账号数据。输入区空间紧张时，按钮会收成图标。

@@ -26,7 +26,6 @@
   position: fixed;
   z-index: 2;
   display: flex;
-  gap: 6px;
   font: 500 12px/1.4 system-ui, "Microsoft YaHei", sans-serif;
   color: var(--cup-fg);
   pointer-events: none;
@@ -88,6 +87,14 @@
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   cursor: pointer;
+}
+[data-codex-usage-preview]:has([data-context-trigger]:not(.cup-compact, [hidden])) [data-speed-trigger] {
+  justify-content: flex-end;
+  padding-inline-end: 3px;
+}
+[data-codex-usage-preview] [data-context-trigger]:not(.cup-compact) {
+  justify-content: flex-start;
+  padding-inline-start: 3px;
 }
 [data-codex-usage-preview] .cup-trigger:hover,
 [data-codex-usage-preview] .cup-trigger[aria-expanded="true"] {
@@ -329,6 +336,91 @@
   border-radius: 2px 2px 0 0;
   background: var(--cup-accent);
 }
+
+[data-codex-usage-preview] :is([data-context-trigger], .cup-context-card) {
+  --cup-context-accent: var(--cup-accent);
+}
+[data-codex-usage-preview] [data-context-near-limit] { --cup-context-accent: #ffd294; }
+[data-codex-usage-preview][data-theme="light"] [data-context-near-limit] { --cup-context-accent: #8b4a00; }
+[data-codex-usage-preview] .cup-context-ring {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: conic-gradient(var(--cup-context-accent) var(--cup-context-fill, 0%), color-mix(in srgb, currentColor 38%, transparent) 0);
+  mask: radial-gradient(farthest-side, transparent calc(100% - 2.4px), #000 calc(100% - 1.8px));
+}
+[data-codex-usage-preview] .cup-context-hero {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: end;
+  gap: 5px 12px;
+  margin-top: 12px;
+}
+[data-codex-usage-preview] .cup-context-percent {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+[data-codex-usage-preview] .cup-context-percent strong {
+  font-size: 31px;
+  line-height: 1.12;
+  letter-spacing: -.045em;
+  color: var(--cup-context-accent);
+}
+[data-codex-usage-preview] :is(.cup-context-percent span, .cup-context-remaining) {
+  color: var(--cup-muted);
+  font-size: 11px;
+}
+[data-codex-usage-preview] .cup-context-remaining {
+  padding-bottom: 3px;
+  font-variant-numeric: tabular-nums;
+}
+[data-codex-usage-preview] .cup-context-meter {
+  height: 6px;
+  margin-top: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--cup-muted) 19%, transparent);
+}
+[data-codex-usage-preview] .cup-context-meter::before {
+  display: block;
+  width: var(--cup-context-fill, 0%);
+  height: 100%;
+  border-radius: inherit;
+  background: var(--cup-context-accent);
+  content: "";
+}
+[data-codex-usage-preview] .cup-context-amounts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding: 10px 11px;
+  margin: 13px 0 0;
+  border: 1px solid var(--cup-border);
+  border-radius: 10px;
+  background: var(--cup-glass-control);
+}
+[data-codex-usage-preview] .cup-context-amounts > div + div {
+  padding-left: 11px;
+  border-left: 1px solid var(--cup-border);
+}
+[data-codex-usage-preview] .cup-context-amounts dt { font-size: 10px; }
+[data-codex-usage-preview] .cup-context-amounts dd {
+  margin: 3px 0 0;
+  font-variant-numeric: tabular-nums;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+[data-codex-usage-preview] .cup-context-note { margin: 9px 0 0; }
+[data-codex-usage-preview] .cup-usage-context {
+  margin: 7px 0 0;
+  color: var(--cup-accent);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
 @property --cup-composer-luminosity {
   syntax: "<number>";
   inherits: false;

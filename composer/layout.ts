@@ -29,14 +29,19 @@ export function currentComposer(document: Document, hostSelector: string) {
   return candidates.findLast((root) => root.contains(document.activeElement)) ?? candidates[0] ?? null;
 }
 
-export const buttonGap = 6;
+export const buttonGap = 2;
 
 const buttonSizes = [
-  { speedWidth: 94, usageWidth: 134 },
-  { speedWidth: 90, usageWidth: 109 },
-  { speedWidth: 88, usageWidth: 30 },
-  { speedWidth: 30, usageWidth: 30 },
-  { speedWidth: 32, usageWidth: 0 },
+  { speedWidth: 94, usageWidth: 134, contextWidth: 62 },
+  { speedWidth: 94, usageWidth: 134, contextWidth: 30 },
+  { speedWidth: 94, usageWidth: 109, contextWidth: 30 },
+  { speedWidth: 88, usageWidth: 30, contextWidth: 30 },
+  { speedWidth: 30, usageWidth: 30, contextWidth: 30 },
+  { speedWidth: 94, usageWidth: 134, contextWidth: 0 },
+  { speedWidth: 90, usageWidth: 109, contextWidth: 0 },
+  { speedWidth: 88, usageWidth: 30, contextWidth: 0 },
+  { speedWidth: 30, usageWidth: 30, contextWidth: 0 },
+  { speedWidth: 32, usageWidth: 0, contextWidth: 0 },
 ];
 
 export function composerSlot(surface: Box, controls: Box[], rowY: number) {
@@ -54,7 +59,9 @@ export function composerSlot(surface: Box, controls: Box[], rowY: number) {
   }
   if (!best) return null;
   for (const size of buttonSizes) {
-    const width = size.speedWidth + (size.usageWidth ? buttonGap + size.usageWidth : 0);
+    const width = size.speedWidth
+      + (size.usageWidth ? buttonGap + size.usageWidth : 0)
+      + (size.contextWidth ? buttonGap + size.contextWidth : 0);
     if (width + 16 <= best.span) return { left: best.end - 8 - width, top: rowY - 15, ...size };
   }
   return null;

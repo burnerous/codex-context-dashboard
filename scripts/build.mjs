@@ -7,6 +7,7 @@ const root = fileURLToPath(new URL("../", import.meta.url));
 const market = join(root, "dist", "marketplace");
 const name = "codex-context-dashboard";
 const plugin = join(market, "plugins", name);
+const portable = process.argv.includes("--portable");
 
 async function write(path, contents) {
   await mkdir(dirname(path), { recursive: true });
@@ -17,9 +18,46 @@ async function json(path, data) {
   await write(path, JSON.stringify(data, null, 2) + "\n");
 }
 
-const nodeExe = process.execPath;
-let command = '"' + nodeExe + '" "${PLUGIN_ROOT}/collect.cjs"';
-if (process.platform === "win32") {
+const nodeExe = portable ? "node.exe" : process.execPath;
+let command = portable ? 'node.exe "${PLUGIN_ROOT}/collect.cjs"' : '"' + nodeExe + '" "${PLUGIN_ROOT}/collect.cjs"';
+if (portable) {
+  if (process.platform !== "win32") throw new Error("The portable offline bundle currently targets Windows.");
+  command = 'powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "${PLUGIN_ROOT}/collect.ps1"';
+  await write(join(plugin, "collect.ps1"), [
+    "$ErrorActionPreference = 'Stop'",
+    "[Console]::InputEncoding = [System.Text.UTF8Encoding]::new($false)",
+    "[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)",
+    "$OutputEncoding = [Console]::OutputEncoding",
+    "$nodeExePath = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\\..\\..\\..\\runtime\\node.exe'))",
+    "if (-not (Test-Path -LiteralPath $nodeExePath -PathType Leaf)) { throw 'The offline Node.js runtime is missing.' }",
+    "$startInfo = New-Object System.Diagnostics.ProcessStartInfo",
+    "$startInfo.FileName = $nodeExePath",
+    "$startInfo.Arguments = '\"' + (Join-Path $PSScriptRoot 'collect.cjs') + '\"'",
+    "$startInfo.UseShellExecute = $false",
+    "$startInfo.CreateNoWindow = $true",
+    "$startInfo.RedirectStandardInput = $true",
+    "$startInfo.RedirectStandardOutput = $true",
+    "$startInfo.RedirectStandardError = $true",
+    "$utf8 = [System.Text.UTF8Encoding]::new($false)",
+    "$startInfo.StandardOutputEncoding = $utf8",
+    "$startInfo.StandardErrorEncoding = $utf8",
+    "$process = New-Object System.Diagnostics.Process",
+    "$process.StartInfo = $startInfo",
+    "if (-not $process.Start()) { throw 'Could not start the offline Node.js runtime.' }",
+    "$stdoutTask = $process.StandardOutput.ReadToEndAsync()",
+    "$stderrTask = $process.StandardError.ReadToEndAsync()",
+    "$inputBytes = $utf8.GetBytes([Console]::In.ReadToEnd())",
+    "$process.StandardInput.BaseStream.Write($inputBytes, 0, $inputBytes.Length)",
+    "$process.StandardInput.Close()",
+    "$process.WaitForExit()",
+    "[Console]::Out.Write($stdoutTask.GetAwaiter().GetResult())",
+    "[Console]::Error.Write($stderrTask.GetAwaiter().GetResult())",
+    "$exitCode = $process.ExitCode",
+    "$process.Dispose()",
+    "exit $exitCode",
+    "",
+  ].join("\r\n"));
+} else if (process.platform === "win32") {
   // A leading quoted executable is a string in a PowerShell command.
   if (/^[A-Za-z]:\\[A-Za-z0-9_.\\-]+$/.test(nodeExe)) {
     command = nodeExe + ' "${PLUGIN_ROOT}/collect.cjs"';
@@ -55,7 +93,12 @@ await Promise.all([
     outdir: plugin, outExtension: { ".js": ".cjs" }, legalComments: "linked",
   }),
   json(join(plugin, ".mcp.json"), {
-    mcpServers: { codex_usage_dashboard: { command: nodeExe, args: ["server.cjs"], cwd: "." } },
+    mcpServers: { codex_usage_dashboard: {
+      command: nodeExe,
+      args: ["server.cjs"],
+      cwd: ".",
+      ...(portable ? { env: { CODEX_DASHBOARD_CODEX_EXE: "${CODEX_DASHBOARD_CODEX_EXE}" } } : {}),
+    } },
   }),
   json(join(plugin, "hooks", "hooks.json"), { hooks: bundledHooks }),
   json(join(market, ".claude-plugin", "marketplace.json"), {

@@ -1,12 +1,16 @@
 ﻿$ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path -Parent $PSScriptRoot
 $effects = if ($env:WOODFISH_EFFECTS_DIR) { $env:WOODFISH_EFFECTS_DIR } else { Join-Path $env:APPDATA 'Woodfish/effects' }
+$portableNode = Join-Path $projectRoot 'runtime/node.exe'
+$usesPortableBundle = Test-Path -LiteralPath $portableNode -PathType Leaf
 if (-not (Test-Path -LiteralPath (Join-Path $effects 'AGENTS.md') -PathType Leaf)) {
     throw '当前用户没有 Woodfish 效果目录。'
 }
 
-& node (Join-Path $PSScriptRoot 'build-composer.mjs')
-if ($LASTEXITCODE -ne 0) { throw '用量速览构建失败。' }
+if (-not $usesPortableBundle) {
+    & node (Join-Path $PSScriptRoot 'build-composer.mjs')
+    if ($LASTEXITCODE -ne 0) { throw '用量速览构建失败。' }
+}
 
 $source = Join-Path $projectRoot 'dist/woodfish'
 $definitions = @(
@@ -38,7 +42,7 @@ foreach ($definition in $definitions) {
     Copy-Item -LiteralPath (Join-Path $effect 'effect.json') -Destination (Join-Path $target 'effect.json') -Force
 }
 $refresh = Join-Path $projectRoot 'dist/marketplace/plugins/codex-context-dashboard/refresh-composer.cjs'
-if (Test-Path -LiteralPath $refresh -PathType Leaf) {
+if (-not $usesPortableBundle -and (Test-Path -LiteralPath $refresh -PathType Leaf)) {
     & node $refresh
     if ($LASTEXITCODE -ne 0) { Write-Warning '暂时未能更新账户额度。' }
 }

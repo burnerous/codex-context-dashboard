@@ -86,18 +86,55 @@ test("the speed trend is bounded and keeps a separate segment after an output pa
   assert.equal(speed.recent().at(-1)?.at, 13_000);
 });
 
-test("both buttons occupy the widest footer gap when space permits", () => {
+test("three footer metrics use the widest gap and compress progressively", () => {
   const box = (left: number, right: number, top = 96, bottom = 124) => ({ left, right, top, bottom });
-  const composer = box(0, 540, 0, 134);
-  const row = [box(10, 38), box(44, 128), box(300, 330), box(335, 511), box(32, 120, 10, 30)];
-  assert.deepEqual(composerSlot(composer, row, 110), { left: 168, top: 95, speedWidth: 88, usageWidth: 30 });
-  assert.deepEqual(composerSlot(composer, [box(10, 38), box(44, 128), box(350, 520)], 110),
-    { left: 137, top: 95, speedWidth: 90, usageWidth: 109 });
-  assert.deepEqual(composerSlot(composer, [box(10, 38), box(44, 128), box(378, 520)], 110),
-    { left: 136, top: 95, speedWidth: 94, usageWidth: 134 });
-  assert.deepEqual(composerSlot(composer, [box(10, 38), box(44, 128), box(220, 520)], 110),
-    { left: 146, top: 95, speedWidth: 30, usageWidth: 30 });
-  assert.deepEqual(composerSlot(composer, [box(10, 38), box(44, 128), box(182, 520)], 110),
-    { left: 142, top: 95, speedWidth: 32, usageWidth: 0 });
-  assert.equal(composerSlot(composer, [box(10, 38), box(44, 128), box(142, 511)], 110), null);
+  const composer = box(0, 700, 0, 134);
+  const slotForSpan = (span: number) => composerSlot(composer,
+    [box(10, 38), box(44, 128), box(128 + span, 700)], 110);
+
+  assert.deepEqual(slotForSpan(385),
+    { left: 211, top: 95, speedWidth: 94, usageWidth: 134, contextWidth: 62 });
+  assert.deepEqual(slotForSpan(286),
+    { left: 144, top: 95, speedWidth: 94, usageWidth: 134, contextWidth: 30 });
+  assert.deepEqual(slotForSpan(261),
+    { left: 144, top: 95, speedWidth: 94, usageWidth: 109, contextWidth: 30 });
+  assert.deepEqual(slotForSpan(180),
+    { left: 148, top: 95, speedWidth: 88, usageWidth: 30, contextWidth: 30 });
+  assert.deepEqual(slotForSpan(118),
+    { left: 144, top: 95, speedWidth: 30, usageWidth: 30, contextWidth: 30 });
+});
+
+test("three footer controls stay within the gap with native and inter-control spacing", () => {
+  const box = (left: number, right: number, top = 96, bottom = 124) => ({ left, right, top, bottom });
+  const surface = box(0, 700, 0, 134);
+  for (const span of [385, 286, 261, 180, 118]) {
+    const gapStart = 128;
+    const gapEnd = gapStart + span;
+    const slot = composerSlot(surface, [box(10, 38), box(44, gapStart), box(gapEnd, 700)], 110);
+    assert(slot);
+
+    const speedEnd = slot.left + slot.speedWidth;
+    const usageStart = speedEnd + 2;
+    const usageEnd = usageStart + slot.usageWidth;
+    const contextStart = usageEnd + 2;
+    const contextEnd = contextStart + slot.contextWidth;
+    assert(slot.left >= gapStart + 8);
+    assert.equal(contextEnd, gapEnd - 8);
+    assert.equal(usageStart - speedEnd, 2);
+    assert.equal(contextStart - usageEnd, 2);
+  }
+});
+
+test("context falls back to the existing two-button and single-speed tiers below its minimum", () => {
+  const box = (left: number, right: number, top = 96, bottom = 124) => ({ left, right, top, bottom });
+  const composer = box(0, 700, 0, 134);
+  const slotForSpan = (span: number) => composerSlot(composer,
+    [box(10, 38), box(44, 128), box(128 + span, 700)], 110);
+
+  assert.deepEqual(slotForSpan(109),
+    { left: 167, top: 95, speedWidth: 30, usageWidth: 30, contextWidth: 0 });
+  assert.deepEqual(slotForSpan(60),
+    { left: 148, top: 95, speedWidth: 32, usageWidth: 0, contextWidth: 0 });
+  assert.equal(slotForSpan(47), null);
+  assert.equal(composerSlot(composer, [box(10, 38), box(44, 128), box(128, 700)], 110), null);
 });

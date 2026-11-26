@@ -18,6 +18,7 @@ export const usagePanelContent = `
       <div><dt title="Codex 调用模型的次数。一轮对话可能包含多次调用。">已记录请求</dt><dd data-usage-requests data-pending>待记录</dd></div>
     </dl>
     <p class="cup-usage-detail" data-usage-detail></p>
+    <p class="cup-usage-context" data-usage-context hidden></p>
     <div class="cup-usage-section">
       <div class="cup-head"><span>账户额度</span><span class="cup-status" data-quota-updated></span></div>
       <div class="cup-quota" data-usage-quota></div>

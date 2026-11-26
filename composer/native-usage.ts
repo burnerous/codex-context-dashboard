@@ -5,6 +5,11 @@ export interface NativeChatUsage {
   cacheHitPercent: number | null;
 }
 
+export interface NativeChatContext {
+  usedTokens: number;
+  windowTokens: number | null;
+}
+
 function record(value: unknown): Record<string, unknown> | undefined {
   return typeof value === "object" && value !== null ? value as Record<string, unknown> : undefined;
 }
@@ -27,4 +32,20 @@ export function nativeChatUsage(message: unknown, activeId: string | null): Nati
   const cached = tokenCount(total?.cachedInputTokens);
   const cacheHitPercent = inputTokens > 0 && cached !== null && cached <= inputTokens ? 100 * cached / inputTokens : null;
   return { totalTokens, inputTokens, outputTokens, cacheHitPercent };
+}
+
+export function nativeChatContext(message: unknown, activeId: string | null): NativeChatContext | null {
+  const envelope = record(message);
+  if (!activeId || envelope?.type !== "mcp-notification" || envelope.hostId !== "local"
+    || envelope.method !== "thread/tokenUsage/updated") return null;
+  const params = record(envelope.params);
+  if (params?.threadId !== activeId) return null;
+  const tokenUsage = record(params.tokenUsage);
+  const last = record(tokenUsage?.last);
+  const usedTokens = tokenCount(last?.totalTokens);
+  if (usedTokens === null) return null;
+  const capacity = tokenUsage?.modelContextWindow;
+  const windowTokens = typeof capacity === "number" && Number.isSafeInteger(capacity) && capacity > 0
+    ? capacity : null;
+  return { usedTokens, windowTokens };
 }
