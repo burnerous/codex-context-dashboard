@@ -1,4 +1,6 @@
-﻿$ErrorActionPreference = 'Stop'
+﻿param([switch]$Prebuilt)
+
+$ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path -Parent $PSScriptRoot
 $buildRoot = Join-Path $projectRoot 'dist/marketplace'
 $catalog = Join-Path $buildRoot '.claude-plugin/marketplace.json'
@@ -10,6 +12,7 @@ $codexHome = if ($env:CODEX_HOME) { $env:CODEX_HOME } else { Join-Path $env:USER
 $marketplace = Join-Path $codexHome 'local-marketplaces/codex-context-dashboard'
 $portableNode = Join-Path $projectRoot 'runtime/node.exe'
 $usesPortableNode = Test-Path -LiteralPath $portableNode -PathType Leaf
+$prebuiltInstall = $Prebuilt -or $usesPortableNode
 $codexCommand = Get-Command codex.exe -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
 if ($codexCommand) {
     $codexExe = $codexCommand.Source
@@ -35,15 +38,22 @@ function Get-Sha256([string]$filePath) {
     }
 }
 
-if ($usesPortableNode) {
-    $portableVersion = (& $portableNode --version).Trim()
-    if ($LASTEXITCODE -ne 0 -or $portableVersion -notmatch '^v(\d+\.\d+\.\d+)$') {
-        throw '离线 Node.js 运行时无法启动。'
+if ($prebuiltInstall) {
+    $packageNode = if ($usesPortableNode) { $portableNode } else {
+        (Get-Command node.exe -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1).Source
     }
-    $portableMajor = [int]$portableVersion.Substring(1).Split('.')[0]
-    if ($portableMajor -lt 24) {
-        throw "离线 Node.js 版本 $portableVersion 低于所需的 v24。"
+    if (-not $packageNode) {
+        throw '轻量包需要 Node.js 24 或更高版本。请安装后确认 node --version 可用，或改用自带 Node.js 的离线包。'
     }
+    $reportedVersion = & $packageNode --version
+    $nodeVersion = ([string]$reportedVersion).Trim()
+    if ($LASTEXITCODE -ne 0 -or $nodeVersion -notmatch '^v(\d+)\.\d+\.\d+$') {
+        throw '无法确认 Node.js 版本。请检查 node --version 的输出。'
+    }
+    if ([int]$Matches[1] -lt 24) {
+        throw "当前 Node.js 版本为 $nodeVersion。请升级到 v24 或更高版本，或改用自带 Node.js 的离线包。"
+    }
+    $installedNode = $packageNode
 }
 
 New-Item -Path $marketplace -ItemType Directory -Force | Out-Null
@@ -53,7 +63,7 @@ Get-ChildItem -LiteralPath $buildRoot -Force | ForEach-Object {
 
 if ($usesPortableNode) {
     $runtimeHash = (Get-Sha256 $portableNode)
-    $runtimeDirectoryName = $portableVersion.Substring(1) + '-' + $runtimeHash.Substring(0, 12)
+    $runtimeDirectoryName = $nodeVersion.Substring(1) + '-' + $runtimeHash.Substring(0, 12)
     $installedRuntimeDirectory = Join-Path $marketplace ('runtime/' + $runtimeDirectoryName)
     $installedNode = Join-Path $installedRuntimeDirectory 'node.exe'
     New-Item -ItemType Directory -Path $installedRuntimeDirectory -Force | Out-Null
@@ -74,7 +84,9 @@ if ($usesPortableNode) {
             Copy-Item -LiteralPath $portableLicense -Destination $installedLicense -Force
         }
     }
+}
 
+if ($prebuiltInstall) {
     $pluginSource = Join-Path $marketplace 'plugins/codex-context-dashboard'
     $manifestPath = Join-Path $pluginSource '.mcp.json'
     $manifest = Get-Content -LiteralPath $manifestPath -Raw -Encoding UTF8 | ConvertFrom-Json

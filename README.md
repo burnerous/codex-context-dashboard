@@ -36,11 +36,14 @@
 
 ## 安装聊天内看板
 
-### Windows x64 离线安装
+### Windows x64 安装包
 
-在 GitHub Releases 下载 `*-windows-x64-offline.zip`，完整解压后双击 `Install.cmd`。电脑需要已安装 Windows 版 Codex 桌面端。包内自带 Node.js 和构建产物，安装插件时无需安装 Node.js、npm 或 Git。
+两种安装包都已预构建，可离线安装，功能相同。电脑需已安装 Windows 版 Codex 桌面端。两种包都无需 npm 或 Git。
 
-如果电脑已启用 [Woodfish 的 Codex 桌面效果](https://github.com/woodfishhhh/Woodfish-Theme#codex-桌面端)，再双击 `Install-Woodfish.cmd`，即可安装输入区速览。安装完成后可以删除解压目录。更新时解压新版并再次运行相应的安装程序。运行安装程序会启用插件。 [下载离线包](https://github.com/burnerous/codex-context-dashboard/releases/latest)
+- **轻量包，约 1 MB。** 需要已安装 Node.js 24 或更新版本，并能在 PowerShell 中运行 `node --version`。下载 [Windows x64 轻量包](https://github.com/burnerous/codex-context-dashboard/releases/download/v0.1.9/codex-context-dashboard-v0.1.9-windows-x64-lite.zip)。
+- **离线包，约 37 MB。** 内含 Node.js 运行时，不需要预装 Node.js。下载 [Windows x64 离线包](https://github.com/burnerous/codex-context-dashboard/releases/download/v0.1.9/codex-context-dashboard-v0.1.9-windows-x64-offline.zip)。
+
+完整解压下载的 ZIP 后双击 `Install.cmd`。如果已启用 [Woodfish 的 Codex 桌面效果](https://github.com/woodfishhhh/Woodfish-Theme#codex-桌面端)，还可双击 `Install-Woodfish.cmd` 安装输入区速览。安装后可以删除解压目录。更新时解压新版并再次运行相应的安装程序，安装程序会启用插件。
 
 ### 从源码安装
 
@@ -62,7 +65,7 @@ npm run build
 
 ## 可选的输入区用量速览
 
-聊天内看板可以独立使用。要在输入区底部显示波形、圆柱和环形按钮，先安装聊天内看板，再启用 Woodfish 的 Codex 桌面效果。离线包用户双击 `Install-Woodfish.cmd`。从源码安装时，在项目目录运行下面的命令。 [Woodfish 安装说明](https://github.com/woodfishhhh/Woodfish-Theme#codex-桌面端)
+聊天内看板可以独立使用。要在输入区底部显示波形、圆柱和环形按钮，先安装聊天内看板，再启用 Woodfish 的 Codex 桌面效果。使用安装包时双击 `Install-Woodfish.cmd`。从源码安装时，在项目目录运行下面的命令。 [Woodfish 安装说明](https://github.com/woodfishhhh/Woodfish-Theme#codex-桌面端)
 
 ```powershell
 .\scripts\install-composer.ps1
