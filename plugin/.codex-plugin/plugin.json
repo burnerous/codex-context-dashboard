@@ -1,6 +1,6 @@
 {
   "name": "codex-context-dashboard",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "在 Codex 聊天内查看 Token 用量、上下文输入量趋势和账户额度。",
   "author": { "name": "Local" },
   "skills": "./skills",

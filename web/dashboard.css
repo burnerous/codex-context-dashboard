@@ -1,64 +1,12 @@
 :root {
   color-scheme: light;
-  --page: #f0f2ed;
-  --surface: #fbfcf9;
-  --well: #f0f3ee;
-  --hover: #e9eee7;
-  --line: #dce3db;
-  --line-strong: #c8d3c9;
-  --ink: #232c27;
-  --muted: #53645b;
-  --accent: #137457;
-  --accent-fill: #2c8468;
-  --accent-soft: #e4f1e8;
-  --secondary: #5f69a3;
-  --warn: #9a4e22;
-  --warn-soft: #f8ecdf;
-  --danger: #a33c38;
-  --danger-soft: #faecea;
   --number-font: "Cascadia Mono", "SFMono-Regular", Consolas, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) {
-    color-scheme: dark;
-    --page: #181d1a;
-    --surface: #202622;
-    --well: #29312c;
-    --hover: #313a34;
-    --line: #353f38;
-    --line-strong: #49564d;
-    --ink: #edf3ed;
-    --muted: #aabaae;
-    --accent: #8dd7b3;
-    --accent-fill: #68bd9a;
-    --accent-soft: #294238;
-    --secondary: #a0a9e3;
-    --warn: #f1b187;
-    --warn-soft: #443228;
-    --danger: #ffada7;
-    --danger-soft: #452f2e;
-  }
-}
+:root[data-theme="dark"] { color-scheme: dark; }
 
-:root[data-theme="dark"] {
-  color-scheme: dark;
-  --page: #181d1a;
-  --surface: #202622;
-  --well: #29312c;
-  --hover: #313a34;
-  --line: #353f38;
-  --line-strong: #49564d;
-  --ink: #edf3ed;
-  --muted: #aabaae;
-  --accent: #8dd7b3;
-  --accent-fill: #68bd9a;
-  --accent-soft: #294238;
-  --secondary: #a0a9e3;
-  --warn: #f1b187;
-  --warn-soft: #443228;
-  --danger: #ffada7;
-  --danger-soft: #452f2e;
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) { color-scheme: dark; }
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -110,9 +58,13 @@ button:disabled { cursor: default; opacity: .45; }
 
 .surface {
   overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  background: var(--surface);
+  border: 1px solid var(--cup-glass-rim);
+  border-radius: var(--cup-glass-radius);
+  background-color: var(--cup-bg);
+  background-image: var(--cup-glass-background);
+  box-shadow: var(--cup-glass-shadow-paint);
+  -webkit-backdrop-filter: blur(var(--cup-glass-blur)) saturate(var(--cup-glass-saturate));
+  backdrop-filter: blur(var(--cup-glass-blur)) saturate(var(--cup-glass-saturate));
 }
 
 .demo-controls, .dashboard-head, .panel-head, .quota-meta, .quota-figures, .header-controls {
@@ -168,6 +120,7 @@ button:disabled { cursor: default; opacity: .45; }
   min-height: 66px;
   padding: 13px 18px;
   border-bottom: 1px solid var(--line);
+  background: var(--cup-glass-header);
 }
 
 .title-group { gap: 10px; }

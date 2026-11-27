@@ -112,8 +112,9 @@ await Promise.all([
   }),
 ]);
 
-const [page, styles, code] = await Promise.all([
+const [page, glass, styles, code] = await Promise.all([
   readFile(join(root, "web", "index.html"), "utf8"),
+  readFile(join(root, "shared", "glass.css"), "utf8"),
   readFile(join(root, "web", "dashboard.css"), "utf8"),
   build({
     entryPoints: [join(root, "web", "dashboard.ts")],
@@ -122,7 +123,7 @@ const [page, styles, code] = await Promise.all([
   }),
 ]);
 const html = page
-  .replace("<!-- DASHBOARD_STYLES -->", () => "<style>\n" + styles + "\n</style>")
+  .replace("<!-- DASHBOARD_STYLES -->", () => `<style>\n${glass}\n${styles}\n</style>`)
   .replace("<!-- DASHBOARD_SCRIPT -->", () => "<script type=\"module\">\n"
     + code.outputFiles[0].text.replace(/<\/script/gi, "<\\/script") + "\n</script>");
 await Promise.all([

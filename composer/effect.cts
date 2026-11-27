@@ -2,6 +2,7 @@ import { Tiktoken } from "js-tiktoken/lite";
 import ranks from "composer-speed-ranks";
 import { readContextHistory, saveContextHistory } from "./context-history.ts";
 import { bindContextPreview, contextPanelContent, contextTriggerContent } from "./context-panel.ts";
+import { DashboardGlass, dashboardWebviewSelector } from "./dashboard-glass.ts";
 import { bindUsagePreview, usagePanelContent } from "./dashboard-preview.ts";
 import {
   buttonGap, composerSlot, currentComposer, homeComposerSelector, pendingComposerMarker, visibleComposerElement,
@@ -16,6 +17,7 @@ import { bindUsageStatistics, usageStatisticsMarkup } from "./statistics-panel.t
 import { keepLatestAccount } from "../src/account-data.ts";
 import { chatProperty, localChatId, sessionIdFromSidebar } from "../src/composer-contract.ts";
 import type { AccountSnapshot } from "../src/dashboard-types.ts";
+import glassStyle from "../shared/glass.css";
 import style from "./effect.css";
 import statisticsStyle from "./statistics.css";
 
@@ -47,6 +49,7 @@ function mount(ctx: EffectContext) {
   const sessions = new Map<string, NativeChatSpeed>();
   const reported = new Map<string, { usage: NativeChatUsage | null; context: NativeChatContext | null }>();
   const activity = new NativeChatActivity();
+  const dashboardGlass = new DashboardGlass(glassStyle);
   const desktopReader = new NativeDashboardReader((ms, callback) => ctx.later(ms, callback));
   const refreshSequence = { speed: 0, usage: 0 };
   let manualAccount: AccountSnapshot | null = null;
@@ -135,7 +138,7 @@ function mount(ctx: EffectContext) {
   const usageContext = cards.usage.querySelector<HTMLElement>("[data-usage-context]")!;
   const renderContext = bindContextPreview(buttons.context, cards.context, usageContext);
   ctx.layer.append(root);
-  ctx.style(`${style}\n${statisticsStyle}`);
+  ctx.style(`${glassStyle}\n${style}\n${statisticsStyle}`);
 
   const format = (value: number | null | undefined) => value == null ? "—" : `≈${value.toFixed(1)}`;
 
@@ -487,8 +490,11 @@ function mount(ctx: EffectContext) {
   setTheme();
   layout();
   render();
+  const syncDashboardGlass = () => dashboardGlass.sync(document.querySelectorAll(dashboardWebviewSelector));
+  syncDashboardGlass();
   const layoutTimer = window.setInterval(() => {
     if (!document.hidden) {
+      syncDashboardGlass();
       layout();
       if (!openPanel) render();
     }
@@ -501,6 +507,7 @@ function mount(ctx: EffectContext) {
     update() {},
     dispose() {
       finishAllSpeed();
+      dashboardGlass.dispose();
       desktopReader.dispose();
       window.clearInterval(layoutTimer);
       window.clearInterval(panelTimer);

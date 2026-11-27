@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdirSync, mkdtempSync, rmSync, rmdirSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, rmdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
@@ -153,15 +153,16 @@ test("usage statistics leave a legacy chat with multiple workspace matches empty
   assert.deepEqual(scoped.days, []);
 });
 
-test("the MCP statistics resource reads local and chat scopes through its validated URI", { timeout: 10_000 }, async (context) => {
+test("MCP serves dashboard resources and validates usage statistics scopes", { timeout: 10_000 }, async (context) => {
   const profile = mkdtempSync(join(tmpdir(), "codex-statistics-mcp-"));
   const dataDirectory = join(profile, "codex-context-dashboard");
   const database = join(dataDirectory, "usage.sqlite");
   const serverFile = join(profile, "server.cjs");
+  const dashboardFile = join(profile, "dashboard.html");
   const client = new Client({ name: "usage-statistics-test", version: "1.0.0" });
   context.after(async () => {
     await client.close();
-    for (const file of [database, `${database}-wal`, `${database}-shm`, serverFile]) rmSync(file, { force: true });
+    for (const file of [database, `${database}-wal`, `${database}-shm`, serverFile, dashboardFile]) rmSync(file, { force: true });
     rmdirSync(dataDirectory);
     rmdirSync(profile);
   });
@@ -178,7 +179,17 @@ test("the MCP statistics resource reads local and chat scopes through its valida
     entryPoints: [fileURLToPath(new URL("../src/server.ts", import.meta.url))],
     platform: "node", target: "node24", format: "cjs", bundle: true, outfile: serverFile,
   });
+  const dashboardHtml = '<html lang="zh-CN" data-codex-usage-dashboard></html>';
+  writeFileSync(dashboardFile, dashboardHtml);
   await client.connect(new StdioClientTransport({ command: process.execPath, args: [serverFile], env: { CODEX_HOME: profile } }));
+
+  for (const version of ["0.1.1", "0.1.2"]) {
+    const uri = `ui://codex-usage-dashboard/dashboard-${version}.html`;
+    const { contents: [resource] } = await client.readResource({ uri });
+    assert.ok(resource && "text" in resource);
+    assert.equal(resource.uri, uri);
+    assert.equal(resource.text, dashboardHtml);
+  }
 
   async function readJson<T>(uri: string): Promise<T> {
     const { contents: [resource] } = await client.readResource({ uri });

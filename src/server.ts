@@ -12,21 +12,24 @@ import type { DashboardSnapshot } from "./dashboard-types.ts";
 import { dashboardProfile, openUsageStore } from "./settings.ts";
 
 const server = new McpServer(
-  { name: "codex-usage-dashboard", version: "0.1.9" },
+  { name: "codex-usage-dashboard", version: "0.1.10" },
   { instructions: "用户要求打开 Codex 用量看板时，调用 open_usage_dashboard，在聊天内呈现面板。" },
 );
-const uri = "ui://codex-usage-dashboard/dashboard-0.1.1.html";
+const uri = "ui://codex-usage-dashboard/dashboard-0.1.2.html";
 const profile = dashboardProfile(__dirname);
 const account = new AccountService({ profile });
 const store = openUsageStore(profile);
 
-registerAppResource(server, "Codex 用量看板", uri, {}, async () => ({
-  contents: [{
-    uri,
-    mimeType: "text/html;profile=mcp-app",
-    text: await readFile(join(__dirname, "dashboard.html"), "utf8"),
-  }],
-}));
+// Previous chats can still reference the earlier resource URI.
+for (const resourceUri of [uri, "ui://codex-usage-dashboard/dashboard-0.1.1.html"]) {
+  registerAppResource(server, "Codex 用量看板", resourceUri, {}, async () => ({
+    contents: [{
+      uri: resourceUri,
+      mimeType: "text/html;profile=mcp-app",
+      text: await readFile(join(__dirname, "dashboard.html"), "utf8"),
+    }],
+  }));
+}
 
 registerAppTool(server, "open_usage_dashboard", {
   title: "打开用量看板",

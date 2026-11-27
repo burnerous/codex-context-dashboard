@@ -13,7 +13,7 @@
 
 截图使用演示数据，点击可以看大图。
 
-[![聊天内看板显示账号额度、近 7 天用量、当前对话和请求趋势](docs/images/chat-dashboard.png)](docs/images/chat-dashboard.png)
+[![毛玻璃主题的聊天内看板，显示账号额度、近 7 天用量、当前对话和请求趋势](docs/images/chat-dashboard.png)](docs/images/chat-dashboard.png)
 
 **聊天内看板。** 选中一根柱子，就能看到那次请求的 Token 明细。上下文压缩和子代理事件也在旁边，方便对照用量变化。
 
@@ -39,6 +39,8 @@
 ### Windows x64 安装包
 
 两种安装包都已预构建，可离线安装，功能相同。电脑需已安装 Windows 版 Codex 桌面端。两种包都无需 npm 或 Git。
+
+当前预构建包为 v0.1.9。要体验上图的毛玻璃主题，请按下方步骤从源码安装。
 
 - **轻量包，约 1 MB。** 需要已安装 Node.js 24 或更新版本，并能在 PowerShell 中运行 `node --version`。下载 [Windows x64 轻量包](https://github.com/burnerous/codex-context-dashboard/releases/download/v0.1.9/codex-context-dashboard-v0.1.9-windows-x64-lite.zip)。
 - **离线包，约 37 MB。** 内含 Node.js 运行时，不需要预装 Node.js。下载 [Windows x64 离线包](https://github.com/burnerous/codex-context-dashboard/releases/download/v0.1.9/codex-context-dashboard-v0.1.9-windows-x64-offline.zip)。
@@ -77,7 +79,7 @@ npm run build
 
 悬停打开小卡，点一次固定，再点一次或按 Esc 关闭。小卡右上角的刷新按钮会重读测速样本，或更新本地用量和账号数据。输入区空间紧张时，按钮会收成图标。
 
-「设置 → 外观 → Woodfish 外观 → 用量速览」提供开关和外观参数。统计图上的悬浮提示使用随主题切换的实底。
+「设置 → 外观 → Woodfish 外观 → 用量速览」提供开关和外观参数。聊天内看板会同步应用底色不透明度、背景模糊、背景饱和度、圆角、高光和阴影。统计图上的悬浮提示使用随主题切换的实底。
 
 <details>
 <summary>测速和统计口径</summary>
